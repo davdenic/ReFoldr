@@ -1,10 +1,38 @@
 # 📀 ReFoldr: Album Folder Renamer
 
-This Python script renames music album folders into a consistent format:
+This Python script renames music album folders without the year into a consistent format:
 
 ```
 YYYY - Album Title
 ```
+
+It can grab the year from Discogs
+
+It can run in dry-mode and preserve Remaster and Deluxe versions that are tipically released in a different year
+
+---
+
+An album folder that is inside "Band Name" folder is named "Band Name Something (2011) cd1"
+
+It will be renamed "2011 - Something (Disc 1)"
+
+From
+
+```
+Music/
+├── Band Name/
+│   ├── Band Name Something (2011) cd1/
+```
+
+To 
+
+```
+Music/
+├── Band Name/
+│   ├── 2011 - Something (Disc 1)/
+```
+
+---
 
 It is designed to work with a typical music library structure:
 
@@ -24,19 +52,35 @@ After running the script, folders will be renamed consistently, while respecting
 ## ⚙️ Requirements
 
 - Python **3.7+**
-- Standard library only (no external dependencies)
-
+- External dependencies:
+    - requests
+    - python-dotenv
 ---
 
 ## 🚀 Usage
 
 Download the script somewhere on your computer.
 
+Install dependencies
+
+```bash
+cd /path/to/refoldr
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
 Make sure the script is executable:
 
 ```bash
 chmod +x /path/to/refoldr.py
 ```
+
+# run script
+./path/to/refoldr.py
+
+# deactivate when done
+deactivate
+
 
 Run the script from the root of your music library or from inside an artist folder:
 
@@ -45,6 +89,11 @@ cd Music
 /path/to/refoldr.py [options]
 ```
 
+**Use the dry-run option the first time and check the log files**
+
+---
+
+You can add your personal Discogs token to .env file to fetch the year from Discogs
 
 ---
 

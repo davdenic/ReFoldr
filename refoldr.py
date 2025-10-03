@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
+from dotenv import load_dotenv
+import requests
 import os
 import re
 import argparse
 from pathlib import Path
+import time
+import unicodedata
 
-# Version 1.0
+load_dotenv()
+DISCOGS_TOKEN = os.getenv("DISCOGS_TOKEN")
+
+# Version 1.1.1
 
 # ----------------------------
 # Argument parser
@@ -42,10 +49,76 @@ for opt in args.edge.lower().split(","):
 # ----------------------------
 renamed_log = open("renamed.log", "w", encoding="utf-8")
 skipped_log = open("skipped.log", "w", encoding="utf-8")
+not_found_log = open("not_found.log", "w", encoding="utf-8")
 
 # ----------------------------
 # Functions
 # ----------------------------
+def normalize_title(title: str) -> str:
+    """
+    Normalize title for Discogs search:
+    - Remove accents
+    - Remove quotes, underscores, dashes
+    - Remove content inside parentheses or brackets
+    - Collapse multiple spaces
+    """
+    # Normalize accented characters to ASCII
+    title = unicodedata.normalize('NFKD', title)
+    title = title.encode('ascii', 'ignore').decode('ascii')
+    
+    # Remove parentheses/brackets and their content
+    title = re.sub(r"[\(\[].*?[\)\]]", "", title)
+    
+    # Remove quotes, underscores, dashes, and other punctuation except letters/numbers/spaces
+    title = re.sub(r"[\"'_\-–—]", " ", title)
+    
+    # Collapse multiple spaces
+    title = re.sub(r"\s+", " ", title).strip()
+    
+    return title
+
+def get_year_from_discogs(band_name: str, album_title: str) -> str | None:
+    """Query Discogs API for the official release year of an album."""
+    if not DISCOGS_TOKEN:
+        return None
+    
+    url = "https://api.discogs.com/database/search"
+    params = {
+        "artist": normalize_title(band_name),
+        "release_title": normalize_title(album_title),
+        "token": DISCOGS_TOKEN,
+        "type": "master"  # search for the master release
+    }
+
+    time.sleep(1.1)
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        results = resp.json().get("results", [])
+        if not results:
+            msg = f"[NOT-FOUND] Discogs API not found for {band_name}/{album_title}"
+            print(msg)
+            not_found_log.write(msg + "\n")
+            return None
+
+        # pick the first master result with a year
+        for r in results:
+            year = r.get("year")
+            if year:
+                return str(year)
+       
+        msg = f"[NOT-FOUND] Discogs API not found for {band_name}/{album_title}"
+        print(msg)
+        not_found_log.write(msg + "\n")
+        return None
+
+    except Exception as e:
+        msg = f"[ERROR] Discogs API failed for {band_name}/{album_title}: {e}"
+        print(msg)
+        not_found_log.write(msg + "\n")
+        return None
+
+
 def sanitize(name: str) -> str:
     name = name.replace("@", "").replace("~", "")
     # name = re.sub(r"[\[]", "(", name)
@@ -55,6 +128,7 @@ def sanitize(name: str) -> str:
     name = re.sub(r"[–—−]", "-", name)
     name = re.sub(r"\s+", " ", name).strip()
     name = re.sub(r"[-\s]+$", "", name)
+    name = re.sub(r"(?<!\()(?<!\w)((?:cd|disc)(\d+))(?!\))", lambda m: f"(Disc {m.group(2)})", name, flags=re.IGNORECASE)
     return name
 
 def remove_band_name(album_title: str, band_name: str) -> str:
@@ -103,6 +177,13 @@ def rename_album_folder(path: Path):
         skipped_log.write(msg + "\n")
     else:
         album_title = move_year_in_front(album_title)
+        # If it does not start with a year, try Discogs
+        if not re.match(r"^\d{4} - ", album_title):
+            print(f"search albums \"{album_title}\" year on Discogs")
+            year = get_year_from_discogs(band_name, album_title)
+            if year:
+                album_title = f"{year} - {album_title}"
+
 
     if not album_title:
         msg = f"[UNCHANGED] Empty title after sanitization: {rel_path}"

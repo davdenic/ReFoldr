@@ -1,0 +1,2 @@
+python-dotenv
+discogs_client
