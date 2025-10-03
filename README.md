@@ -30,18 +30,21 @@ After running the script, folders will be renamed consistently, while respecting
 
 ## 🚀 Usage
 
-Run the script from the root of your music library or from inside an artist folder:
-
-```bash
-cd Music
-./rename_albums.py [options]
-```
+Download the script somewhere on your computer.
 
 Make sure the script is executable:
 
 ```bash
-chmod +x rename_albums.py
+chmod +x /path/to/refoldr.py
 ```
+
+Run the script from the root of your music library or from inside an artist folder:
+
+```bash
+cd Music
+/path/to/refoldr.py [options]
+```
+
 
 ---
 
@@ -51,7 +54,7 @@ chmod +x rename_albums.py
 Show what would be renamed without making changes:
 
 ```bash
-./rename_albums.py -d
+./refoldr.py -d
 ```
 
 ### **Edge Cases**
@@ -64,13 +67,13 @@ You can force processing with the `-e/--edge` option:
 
 ```bash
 # Process remasters only
-./rename_albums.py -e r
+./refoldr.py -e r
 
 # Process remasters + deluxe
-./rename_albums.py -e r,d
+./refoldr.py -e r,d
 
 # Process all edge cases
-./rename_albums.py -e r,d,m
+./refoldr.py -e r,d,m
 ```
 
 ### **Levels**
@@ -79,15 +82,15 @@ Default: `1,2` (Artist folders at level 1, Album folders at level 2)
 
 ```bash
 # Rename albums inside Music/Artist/Album
-./rename_albums.py -l 1,2
+./refoldr.py -l 1,2
 
 # Run inside an Artist folder
 cd Music/Artist
-./rename_albums.py -l 0,1
+./refoldr.py -l 0,1
 
 # Run inside a single Album folder (no band detection)
 cd Music/Artist/Album
-./rename_albums.py -l -1,0
+./refoldr.py -l -1,0
 ```
 
 ---
@@ -117,7 +120,7 @@ Music/
 Command:
 
 ```bash
-./rename_albums.py -d
+./refoldr.py -d
 ```
 
 Output:
