@@ -54,15 +54,10 @@ jobs:
         run: |
           cp .env-temp dist/.env
 
-      - name: Rename artifact for architecture
+      - name: Copy README for release
         shell: bash
         run: |
-          ART_NAME="refoldr-${{ runner.os }}-${{ matrix.arch }}"
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            mv dist/refoldr.exe dist/${ART_NAME}.exe
-          else
-            mv dist/refoldr dist/${ART_NAME}
-          fi
+          cp README.md dist/
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1

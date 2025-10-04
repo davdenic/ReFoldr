@@ -59,11 +59,31 @@ After running the script, folders will be renamed consistently, while respecting
 
 ## 🚀 Setup & Usage
 
-Download somewhere on your computer.
+
+### Usage of the executable release
+
+1. Download the release for your platform (Windows, macOS, Linux).  
+2. Extract the ZIP file.  
+3. Open a terminal (or command prompt) in your music library folder.  
+4. Run the executable
+
+```bash
+# Linux/macOS
+cd path/to/your/music/
+/path/to/refoldr [options]
+
+# Windows
+cd path\to\your\music
+C:\path\to\refoldr.exe [options]
+```
+
+### In alternative usage of the python script
+
+In case you like to inspect the code and change something:
+
 ```
 git clone https://github.com/davdenic/ReFoldr
 ```
-
 
 Make sure the script is executable:
 ```bash
