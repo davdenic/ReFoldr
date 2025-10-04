@@ -38,6 +38,7 @@ jobs:
           echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Build executable
+        shell: bash
         run: |
           mkdir -p dist
           if [ "${{ runner.os }}" == "Windows" ]; then
