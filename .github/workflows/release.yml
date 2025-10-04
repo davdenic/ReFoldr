@@ -3,7 +3,7 @@ name: Build and Release ReFoldr
 on:
   push:
     tags:
-      - 'v*'   # Trigger only on version tags like v1.0.0
+      - 'v*'   # Trigger on version tags like v1.0.0
 
 jobs:
   build:
@@ -11,7 +11,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [x64]
         python-version: [3.11]
 
     env:
@@ -27,41 +26,45 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install -r requirements.txt
 
-      - name: Set architecture env (macOS only)
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-
       - name: Build executable
         shell: bash
         run: |
           mkdir -p dist
-          if [ "${{ runner.os }}" == "Windows" ]; then
+          
+          # Build executable
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
             pyinstaller --onefile refoldr.py --name refoldr.exe
+            EXE_NAME="refoldr.exe"
           else
             pyinstaller --onefile refoldr.py --name refoldr
+            EXE_NAME="refoldr"
           fi
 
-      - name: Copy .env for release
-        shell: bash
+      - name: Copy .env and README
         run: |
           cp .env-temp dist/.env
+          cp README.md dist/
 
-      - name: Copy README for release
+      - name: Create ZIP for this OS
         shell: bash
         run: |
-          cp README.md dist/
+          cd dist
+          ZIP_NAME="refoldr-${{ runner.os }}.zip"
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            powershell Compress-Archive -Path $EXE_NAME, .env, README.md -DestinationPath $ZIP_NAME
+          else
+            zip -r $ZIP_NAME $EXE_NAME .env README.md
+          fi
+          cd ..
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          files: dist/refoldr-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
