@@ -11,7 +11,7 @@ import unicodedata
 load_dotenv()
 DISCOGS_TOKEN = os.getenv("DISCOGS_TOKEN")
 
-# Version 1.1.1
+# Version 1.2.3
 
 # ----------------------------
 # Argument parser
@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description="Rename album folders in 'YYYY - Al
 parser.add_argument("-d", "--dry-run", action="store_true", help="Show changes without renaming")
 parser.add_argument("-e", "--edge", type=str, default="", help="Edge cases to process: r/remaster, d/delux, m/multiyears, comma-separated")
 parser.add_argument("-l", "--level", type=str, default="1,2", help="Levels to process: start_level,end_level. Default 1,2")
+parser.add_argument("--deflat", action="store_true", help="Split combined 'Artist Album (Year)' folders into Artist/Album before renaming")
 args = parser.parse_args()
 
 # ----------------------------
@@ -50,6 +51,7 @@ for opt in args.edge.lower().split(","):
 renamed_log = open("renamed.log", "w", encoding="utf-8")
 skipped_log = open("skipped.log", "w", encoding="utf-8")
 not_found_log = open("not_found.log", "w", encoding="utf-8")
+deflat_log = open("deflat.log", "w", encoding="utf-8")
 
 # ----------------------------
 # Functions
@@ -172,9 +174,10 @@ def rename_album_folder(path: Path):
     album_title = sanitize(album_title)
 
     if is_edge_case(path):
-        msg = f"[SKIP] Edge case: {rel_path}"
-        print(msg)
-        skipped_log.write(msg + "\n")
+        # msg = f"[SKIP] Edge case: {rel_path}"
+        # print(msg)
+        # skipped_log.write(msg + "\n")
+        pass
     else:
         album_title = move_year_in_front(album_title)
         # If it does not start with a year, try Discogs
@@ -194,9 +197,9 @@ def rename_album_folder(path: Path):
     new_path = parent / album_title
 
     if new_path == path:
-        msg = f"[SKIP] Already formatted: {rel_path}"
-        print(msg)
-        skipped_log.write(msg + "\n")
+        # msg = f"[SKIP] Already formatted: {rel_path}"
+        # print(msg)
+        # skipped_log.write(msg + "\n")
         return
 
     msg = f"{'[DRY-RUN] ' if args.dry_run else ''}Rename: {rel_path} -> {new_path}"
@@ -205,6 +208,40 @@ def rename_album_folder(path: Path):
 
     if not args.dry_run:
         path.rename(new_path)
+
+
+def contains_music_files(path: Path) -> bool:
+    MUSIC_EXTS = {".mp3", ".flac", ".wav", ".ogg", ".m4a", ".aac"}
+    return any(f.suffix.lower() in MUSIC_EXTS for f in path.iterdir() if f.is_file())
+
+def is_flatten_dir_contains_music(path: Path) -> bool:
+    # check if there are subfolders that contain music files
+    if path.is_dir() and contains_music_files(path) and path.parent == root:
+        return True
+    return False
+
+def deflat_dir(path: Path):
+    """
+    For flatten folders split the artist and move the folder inside an artist folder.
+    From 'Music-Root/Artist - Album/' to 'Music-Root/Artist/Artist - Album/'
+    """   
+    parts = path.name.split(" - ", 1)
+    if len(parts) < 2:
+        msg = f"[DEFLAT][FAIL] Not found artist album {path}/"
+    else:
+        artist_name = parts[0].strip()
+        album_name = parts[1].strip()
+        artist_folder = path.parent / artist_name
+        album_folder = artist_folder / album_name
+        if not args.dry_run:
+            artist_folder.mkdir(exist_ok=True)
+            path.rename(album_folder)
+            msg = f"[DEFLAT] {path.resolve()} -> {album_folder.resolve()}/"
+        else:
+            msg = f"[DRY-RUN][DEFLAT] {path.resolve()} -> {album_folder.resolve()}"
+    
+    print(msg)
+    deflat_log.write(msg + "\n")
 
 # ----------------------------
 # Parse levels
@@ -216,8 +253,16 @@ except Exception:
     exit(1)
 
 root = Path.cwd()
-root_level = len(root.parts)
 
+# ----------------------------
+# Deflat only on first level
+# ----------------------------
+if args.deflat:
+    for folder in root.iterdir():
+        if is_flatten_dir_contains_music(folder):
+            deflat_dir(folder)
+
+root_level = len(root.parts)
 # ----------------------------
 # Recursive loop for specified levels
 # ----------------------------
@@ -230,6 +275,8 @@ for dirpath, dirnames, _ in os.walk(root, topdown=True):
     if level > end_level:
         dirnames.clear()
         continue
+
+    # album renaming
     if level == end_level:
         rename_album_folder(path)
         dirnames.clear()
@@ -239,3 +286,5 @@ for dirpath, dirnames, _ in os.walk(root, topdown=True):
 # ----------------------------
 renamed_log.close()
 skipped_log.close()
+not_found_log.close()
+deflat_log.close()
