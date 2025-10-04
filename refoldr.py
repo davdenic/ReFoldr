@@ -18,8 +18,6 @@ env_path = base_path / "config.env"
 load_dotenv(env_path)
 DISCOGS_TOKEN = os.getenv("DISCOGS_TOKEN")
 
-# Version 1.2.3
-
 # ----------------------------
 # Argument parser
 # ----------------------------
