@@ -45,7 +45,7 @@ jobs:
       - name: Copy .env and README
         shell: bash
         run: |
-          cp .env-temp dist/.env
+          cp .env-temp dist/config.env
           cp README.md dist/README.md
 
       - name: Create zip for release
@@ -53,9 +53,9 @@ jobs:
         run: |
           cd dist
           if [ "${{ runner.os }}" == "Windows" ]; then
-            powershell Compress-Archive -Path refoldr.exe, .env, README.md -DestinationPath refoldr-Windows.zip
+            powershell Compress-Archive -Path refoldr.exe, config.env, README.md -DestinationPath refoldr-Windows.zip
           else
-            zip -r refoldr-${{ runner.os }}.zip refoldr .env README.md
+            zip -r refoldr-${{ runner.os }}.zip refoldr config.env README.md
           fi
           cd ..
 

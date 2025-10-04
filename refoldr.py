@@ -14,7 +14,7 @@ if getattr(sys, 'frozen', False):  # Running as PyInstaller exe
 else:  # Running as script
     base_path = Path(__file__).parent
 
-env_path = base_path / ".env"
+env_path = base_path / "config.env"
 load_dotenv(env_path)
 DISCOGS_TOKEN = os.getenv("DISCOGS_TOKEN")
 

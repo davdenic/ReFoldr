@@ -63,9 +63,16 @@ After running the script, folders will be renamed consistently, while respecting
 ### Usage of the executable release
 
 1. Download the release for your platform (Windows, macOS, Linux).  
-2. Extract the ZIP file.  
-3. Open a terminal (or command prompt) in your music library folder.  
-4. Run the executable
+2. Extract the ZIP file, it contains:
+    - `refoldr` (or `refoldr.exe` on Windows) → the executable
+    - `config.env` → configuration file (rename or edit if needed)
+    - `README.md` → this instructions file
+
+3. Optional: add your discogs token in config.env
+4. Open a terminal (or command prompt) in your music library folder.  
+5. Run the executable
+
+
 
 ```bash
 # Linux/macOS
