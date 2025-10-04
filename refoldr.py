@@ -174,9 +174,9 @@ def rename_album_folder(path: Path):
     album_title = sanitize(album_title)
 
     if is_edge_case(path):
-        # msg = f"[SKIP] Edge case: {rel_path}"
-        # print(msg)
-        # skipped_log.write(msg + "\n")
+        msg = f"[SKIP] Edge case: {rel_path}"
+        print(msg)
+        skipped_log.write(msg + "\n")
         pass
     else:
         album_title = move_year_in_front(album_title)
@@ -202,7 +202,7 @@ def rename_album_folder(path: Path):
         # skipped_log.write(msg + "\n")
         return
 
-    msg = f"{'[DRY-RUN] ' if args.dry_run else ''}Rename: {rel_path} -> {new_path}"
+    msg = f"{'[DRY-RUN] ' if args.dry_run else ''}[RENAME]: {rel_path} -> {new_path}"
     print(msg)
     renamed_log.write(msg + "\n")
 
