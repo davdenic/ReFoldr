@@ -49,18 +49,7 @@ After running the script, folders will be renamed consistently, while respecting
 
 ---
 
-## ⚙️ Requirements
-
-- Python **3.7+**
-- External dependencies:
-    - requests
-    - python-dotenv
----
-
-## 🚀 Setup & Usage
-
-
-### Usage of the executable release
+## 🚀 Setup
 
 1. Download the release for your platform (Windows, macOS, Linux).  
 2. Extract the ZIP file, it contains:
@@ -73,6 +62,8 @@ After running the script, folders will be renamed consistently, while respecting
 5. Run the executable
 
 
+### How to use it
+
 
 ```bash
 # Linux/macOS
@@ -84,24 +75,12 @@ cd path\to\your\music
 C:\path\to\refoldr.exe [options]
 ```
 
-### In alternative usage of the python script
-
-In case you like to inspect the code and change something:
-
-```
-git clone https://github.com/davdenic/ReFoldr
-```
-
-Make sure the script is executable:
-```bash
-chmod +x /path/to/refoldr.sh
-```
 
 # run script
 
 ```
 # From the root of your music library
-/path/to/refoldr.sh [options]
+/path/to/refoldr [options]
 ```
 
 
@@ -109,7 +88,7 @@ Run the script from the root of your music library or from inside an artist fold
 
 ```bash
 cd Music
-/path/to/refoldr.sh [options]
+/path/to/refoldr [options]
 ```
 
 **Use the dry-run option the first time and check the log files**
@@ -126,7 +105,7 @@ You can add your personal Discogs token to .env file to fetch the year from Disc
 Show what would be renamed without making changes:
 
 ```bash
-/path/to/refoldr.sh -d
+/path/to/refoldr -d
 ```
 
 ### **Edge Cases**
@@ -152,13 +131,13 @@ You can force processing with the `-e/--edge` option:
 
 ```bash
 # Process remasters only
-/path/to/refoldr.sh -e r
+/path/to/refoldr -e r
 
 # Process remasters + deluxe
-/path/to/refoldr.sh -e r,d
+/path/to/refoldr -e r,d
 
 # Process all edge cases
-/path/to/refoldr.sh -e r,d,m
+/path/to/refoldr -e r,d,m
 ```
 
 ### **Levels**
@@ -167,15 +146,15 @@ Default: `1,2` (Artist folders at level 1, Album folders at level 2)
 
 ```bash
 # Rename albums inside Music/Artist/Album
-/path/to/refoldr.sh -l 1,2
+/path/to/refoldr -l 1,2
 
 # Run inside an Artist folder
 cd Music/Artist
-/path/to/refoldr.sh -l 0,1
+/path/to/refoldr -l 0,1
 
 # Run inside a single Album folder (no band detection)
 cd Music/Artist/Album
-/path/to/refoldr.sh -l -1,0
+/path/to/refoldr -l -1,0
 ```
 
 ### Deflat (Flattened Folders)
@@ -185,7 +164,7 @@ Use the --deflat flag to enable this behavior:
 
 ```
 # Move "Artist - Album" folders into "Artist/Album"
-/path/to/refoldr.sh --deflat
+/path/to/refoldr --deflat
 ```
 
 This is applied only at the first level inside your music root, so already correctly structured folders are not affected.
@@ -219,7 +198,7 @@ Music/
 Command:
 
 ```bash
-/path/to/refoldr.sh -d
+/path/to/refoldr -d
 ```
 
 Output:
@@ -255,3 +234,35 @@ Music/
 
 - Optional integration with **Discogs** or **MusicBrainz Picard** to fetch missing release years
 - More advanced handling of multi-disc albums
+
+---
+
+## 🚀 Setup for the Python script
+
+### ⚙️ Requirements (only for the python script)
+
+- Python **3.7+**
+- External dependencies:
+    - requests
+    - python-dotenv
+---
+
+### Download and setup
+
+```
+git clone https://github.com/davdenic/ReFoldr
+```
+
+Make sure the script is executable:
+```bash
+chmod +x /path/to/refoldr.sh
+```
+
+ ### How to use it:
+  
+```bash
+cd Music
+/path/to/refoldr.sh [options]
+```
+
+same options as before
