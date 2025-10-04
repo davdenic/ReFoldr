@@ -27,6 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
@@ -34,6 +35,7 @@ jobs:
 
       - name: Set architecture env (macOS only)
         if: runner.os == 'macOS'
+        shell: bash
         run: |
           echo "ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
@@ -48,10 +50,12 @@ jobs:
           fi
 
       - name: Copy .env for release
+        shell: bash
         run: |
           cp .env-temp dist/.env
 
       - name: Rename artifact for architecture
+        shell: bash
         run: |
           ART_NAME="refoldr-${{ runner.os }}-${{ matrix.arch }}"
           if [ "${{ runner.os }}" == "Windows" ]; then
