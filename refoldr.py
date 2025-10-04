@@ -3,12 +3,19 @@ from dotenv import load_dotenv
 import requests
 import os
 import re
+import sys
 import argparse
 from pathlib import Path
 import time
 import unicodedata
 
-load_dotenv()
+if getattr(sys, 'frozen', False):  # Running as PyInstaller exe
+    base_path = Path(sys.executable).parent
+else:  # Running as script
+    base_path = Path(__file__).parent
+
+env_path = base_path / ".env"
+load_dotenv(env_path)
 DISCOGS_TOKEN = os.getenv("DISCOGS_TOKEN")
 
 # Version 1.2.3
@@ -81,7 +88,10 @@ def normalize_title(title: str) -> str:
 
 def get_year_from_discogs(band_name: str, album_title: str) -> str | None:
     """Query Discogs API for the official release year of an album."""
+    
+    print(f"[DISCOGS] search albums for \"{band_name} {album_title}\"...")
     if not DISCOGS_TOKEN:
+        print("[DISCOGS][ERROR] Token not found in the ReFoldr root")
         return None
     
     url = "https://api.discogs.com/database/search"
@@ -98,7 +108,7 @@ def get_year_from_discogs(band_name: str, album_title: str) -> str | None:
         resp.raise_for_status()
         results = resp.json().get("results", [])
         if not results:
-            msg = f"[NOT-FOUND] Discogs API not found for {band_name}/{album_title}"
+            msg = f"[DISCOGS][NOT-FOUND] Discogs API not found for {band_name}/{album_title}"
             print(msg)
             not_found_log.write(msg + "\n")
             return None
@@ -107,6 +117,7 @@ def get_year_from_discogs(band_name: str, album_title: str) -> str | None:
         for r in results:
             year = r.get("year")
             if year:
+                print(f"[DISCOGS] year {year} found")
                 return str(year)
        
         msg = f"[NOT-FOUND] Discogs API not found for {band_name}/{album_title}"
@@ -182,7 +193,6 @@ def rename_album_folder(path: Path):
         album_title = move_year_in_front(album_title)
         # If it does not start with a year, try Discogs
         if not re.match(r"^\d{4} - ", album_title):
-            print(f"search albums \"{album_title}\" year on Discogs")
             year = get_year_from_discogs(band_name, album_title)
             if year:
                 album_title = f"{year} - {album_title}"
