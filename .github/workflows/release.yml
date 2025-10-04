@@ -12,6 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.11]
+        arch: [x64]
 
     env:
       PYTHONUNBUFFERED: 1
@@ -35,36 +36,32 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          
-          # Build executable
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [ "${{ runner.os }}" == "Windows" ]; then
             pyinstaller --onefile refoldr.py --name refoldr.exe
-            EXE_NAME="refoldr.exe"
           else
             pyinstaller --onefile refoldr.py --name refoldr
-            EXE_NAME="refoldr"
           fi
 
       - name: Copy .env and README
+        shell: bash
         run: |
           cp .env-temp dist/.env
-          cp README.md dist/
+          cp README.md dist/README.md
 
-      - name: Create ZIP for this OS
+      - name: Create zip for release
         shell: bash
         run: |
           cd dist
-          ZIP_NAME="refoldr-${{ runner.os }}.zip"
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            powershell Compress-Archive -Path $EXE_NAME, .env, README.md -DestinationPath $ZIP_NAME
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            powershell Compress-Archive -Path refoldr.exe, .env, README.md -DestinationPath refoldr-Windows.zip
           else
-            zip -r $ZIP_NAME $EXE_NAME .env README.md
+            zip -r refoldr-${{ runner.os }}.zip refoldr .env README.md
           fi
           cd ..
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/refoldr-*.zip
+          files: dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
