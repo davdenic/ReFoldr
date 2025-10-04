@@ -57,36 +57,32 @@ After running the script, folders will be renamed consistently, while respecting
     - python-dotenv
 ---
 
-## 🚀 Usage
+## 🚀 Setup & Usage
 
-Download the script somewhere on your computer.
-
-Install dependencies
-
-```bash
-cd /path/to/refoldr
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -r requirements.txt
+Download somewhere on your computer.
 ```
-Make sure the script is executable:
+git clone https://github.com/davdenic/ReFoldr
+```
 
+
+Make sure the script is executable:
 ```bash
-chmod +x /path/to/refoldr.py
+chmod +x /path/to/refoldr.sh
 ```
 
 # run script
-./path/to/refoldr.py
 
-# deactivate when done
-deactivate
+```
+# From the root of your music library
+/path/to/refoldr.sh [options]
+```
 
 
 Run the script from the root of your music library or from inside an artist folder:
 
 ```bash
 cd Music
-/path/to/refoldr.py [options]
+/path/to/refoldr.sh [options]
 ```
 
 **Use the dry-run option the first time and check the log files**
@@ -103,11 +99,24 @@ You can add your personal Discogs token to .env file to fetch the year from Disc
 Show what would be renamed without making changes:
 
 ```bash
-./refoldr.py -d
+/path/to/refoldr.sh -d
 ```
 
 ### **Edge Cases**
 By default, the script skips "edge cases" (remasters, deluxe editions, multi-year anthologies, etc.).  
+
+```
+Music/
+└── Queen/
+    ├── Greatest Hits (1980–1990)/
+    └── Queen Greatest Hits (2011 Remaster)/
+```
+
+```
+[SKIP] Edge case: Queen/Greatest Hits (1980–1990)
+[SKIP] Edge case: Queen/Queen Greatest Hits (2011 Remaster)
+```
+
 You can force processing with the `-e/--edge` option:
 
 - `r` → remasters
@@ -116,13 +125,13 @@ You can force processing with the `-e/--edge` option:
 
 ```bash
 # Process remasters only
-./refoldr.py -e r
+/path/to/refoldr.sh -e r
 
 # Process remasters + deluxe
-./refoldr.py -e r,d
+/path/to/refoldr.sh -e r,d
 
 # Process all edge cases
-./refoldr.py -e r,d,m
+/path/to/refoldr.sh -e r,d,m
 ```
 
 ### **Levels**
@@ -131,16 +140,28 @@ Default: `1,2` (Artist folders at level 1, Album folders at level 2)
 
 ```bash
 # Rename albums inside Music/Artist/Album
-./refoldr.py -l 1,2
+/path/to/refoldr.sh -l 1,2
 
 # Run inside an Artist folder
 cd Music/Artist
-./refoldr.py -l 0,1
+/path/to/refoldr.sh -l 0,1
 
 # Run inside a single Album folder (no band detection)
 cd Music/Artist/Album
-./refoldr.py -l -1,0
+/path/to/refoldr.sh -l -1,0
 ```
+
+### Deflat (Flattened Folders)
+
+Split combined Artist - Album folders into Artist/Album structure before renaming.
+Use the --deflat flag to enable this behavior:
+
+```
+# Move "Artist - Album" folders into "Artist/Album"
+/path/to/refoldr.sh --deflat
+```
+
+This is applied only at the first level inside your music root, so already correctly structured folders are not affected.
 
 ---
 
@@ -150,8 +171,10 @@ The script creates two log files in the current directory:
 
 - `renamed.log` → all folders that were renamed (or would be renamed in dry-run mode)
 - `skipped.log` → all folders skipped (edge cases, already formatted, unchanged, etc.)
+- `not_found.log` → albums not found via Discogs API when attempting to fetch the year
+- `deflat.log` → folders that were moved or would be moved when using the --deflat option
 
-Paths are written **relative** to the folder where the script is executed.
+Logs are written **relative** to the folder where the script is executed (your Music folder).
 
 ---
 
@@ -169,7 +192,7 @@ Music/
 Command:
 
 ```bash
-./refoldr.py -d
+/path/to/refoldr.sh -d
 ```
 
 Output:
